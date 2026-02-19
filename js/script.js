@@ -65,34 +65,48 @@
   let currentCityDisplay = 'Київ';
 
   // ---------- Головна функція: один запит до VC повертає ВСЕ ----------
-  async function loadWeather(cityQuery) {
+ async function loadWeather(cityQuery) {
     if (API_KEY === 'YOUR_API_KEY') {
-      showError('⚠️ Встав свій API-ключ Visual Crossing у змінну API_KEY у коді!');
-      return;
+        showError('⚠️ Встав свій API-ключ!');
+        return;
     }
 
     showLoading(true);
 
+    // --- НОВИЙ БЛОК: Перетворення координат у назву міста ---
+    let displayCityName = cityQuery;
+    
+    // Перевіряємо, чи cityQuery схожий на координати (містить коми та цифри)
+    if (cityQuery.includes(',')) {
+        try {
+            const [lat, lon] = cityQuery.split(',');
+            const geoRes = await fetch(`https://nominatim.openstreetmap.org/search?q=${lat},${lon}&format=json&addressdetails=1&accept-language=${currentLang}`);
+            const geoData = await geoRes.json();
+            
+            if (geoData && geoData.length > 0) {
+                const addr = geoData[0].address;
+                // Намагаємося взяти місто, місто-супутник або село
+                displayCityName = addr.city || addr.town || addr.village || addr.municipality || cityQuery;
+            }
+        } catch (e) {
+            console.error("Не вдалося визначити назву міста за координатами", e);
+        }
+    }
+    // -------------------------------------------------------
+
     try {
-      // Visual Crossing повертає: поточні дані + прогноз по днях + погодинні дані — одним запитом!
-      // include=hours  — додає погодинні дані для кожного дня
-      // unitGroup=metric — температура °C, тиск мбар, вітер км/год
-      // lang=uk — назви явищ українською (якщо підтримується)
-      const url = `${BASE_URL}/${encodeURIComponent(cityQuery)}/next15days` +
-      `?unitGroup=metric&include=hours,current&lang=${currentLang}&key=${API_KEY}&contentType=json`;
+        const url = `${BASE_URL}/${encodeURIComponent(cityQuery)}/next15days` +
+        `?unitGroup=metric&include=hours,current&lang=${currentLang}&key=${API_KEY}&contentType=json`;
 
+        const res = await fetch(url);
+        if (!res.ok) throw new Error(`Помилка: ${res.status}`);
+        const data = await res.json();
 
-      const res = await fetch(url);
+        // Тепер використовуємо нашу визначену назву міста замість сирих координат
+        currentCityDisplay = displayCityName; 
+        updateCityLabel(currentCityDisplay);
 
-      if (res.status === 400) throw new Error(`Місто "${cityQuery}" не знайдено`);
-      if (res.status === 401) throw new Error('Невірний API-ключ Visual Crossing');
-      if (!res.ok)            throw new Error(`Помилка сервера: ${res.status}`);
-
-      const data = await res.json();
-
-      // Назва міста з відповіді API
-      currentCityDisplay = data.resolvedAddress?.split(',')[0] || cityQuery;
-      updateCityLabel(currentCityDisplay);
+        // ... далі твій існуючий код (allDays = data.days.map і так далі)
 
       // ---------- Обробка днів ----------
       allDays = data.days.slice(0, 10).map((day, idx) => {
@@ -378,7 +392,6 @@ function init() {
 
   init();
   
-
 
 
 
