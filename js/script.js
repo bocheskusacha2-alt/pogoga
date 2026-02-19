@@ -8,6 +8,8 @@
   // Visual Crossing — один endpoint для всього
   // Документація: https://www.visualcrossing.com/resources/documentation/weather-api/timeline-weather-api/
   const BASE_URL = 'https://weather.visualcrossing.com/VisualCrossingWebServices/rest/services/timeline';
+  // 1. Створюємо змінну мови (глобальну)
+  let currentLang = 'uk';
 
   // ---------- Локалізація ----------
   const ukMonths   = ['січня','лютого','березня','квітня','травня','червня','липня','серпня','вересня','жовтня','листопада','грудня'];
@@ -322,25 +324,57 @@ async function handleSearch() {
   });
 
   // ---------- Старт: геолокація → або дефолт Київ ----------
-  function init() {
+function checkGeolocationPermission() {
+    const permission = localStorage.getItem('geoPermission');
+    const lastCity = localStorage.getItem('lastCity');
+    
+    if (permission === 'granted' && lastCity) {
+        // Використовуємо збережене місто
+        loadWeather(lastCity);
+        return true;
+    } else if (permission === 'denied') {
+        // Користувач відмовився, використовуємо Київ
+        loadWeather('Kyiv');
+        return true;
+    }
+    return false;
+}
+
+// Оновлена функція init()
+function init() {
     if (API_KEY === 'YOUR_API_KEY') {
-      showError('⚠️ Встав свій API-ключ Visual Crossing у змінну API_KEY у коді!');
-      return;
+        showError('⚠️ Встав свій API-ключ Visual Crossing у змінну API_KEY у коді!');
+        return;
     }
+    
+    // Спочатку перевіряємо чи є збережена згода
+    if (checkGeolocationPermission()) {
+        return;
+    }
+    
+    // Якщо немає збереженої згоди - питаємо
     if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
-        pos => {
-          // Visual Crossing приймає координати напряму — окремий geocoding не потрібен!
-          const { latitude: lat, longitude: lon } = pos.coords;
-          loadWeather(`${lat},${lon}`);
-        },
-        () => loadWeather('Kyiv'), // геолокація відхилена
-        { timeout: 5000 }
-      );
+        navigator.geolocation.getCurrentPosition(
+            pos => {
+                // Зберігаємо згоду
+                localStorage.setItem('geoPermission', 'granted');
+                const { latitude: lat, longitude: lon } = pos.coords;
+                const cityCoords = `${lat},${lon}`;
+                localStorage.setItem('lastCity', cityCoords);
+                loadWeather(cityCoords);
+            },
+            () => {
+                // Користувач відмовився - зберігаємо це
+                localStorage.setItem('geoPermission', 'denied');
+                localStorage.setItem('lastCity', 'Kyiv');
+                loadWeather('Kyiv');
+            },
+            { timeout: 5000 }
+        );
     } else {
-      loadWeather('Kyiv');
+        loadWeather('Kyiv');
     }
-  }
+}
 
   init();
   
@@ -421,7 +455,6 @@ function debounce(func, timeout = 300) {
 
 
 // 1. Створюємо змінну мови (глобальну)
-let currentLang = 'uk'; 
 
 // 2. Чекаємо, поки завантажиться весь документ
 document.addEventListener('DOMContentLoaded', () => {
@@ -447,3 +480,12 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 });
+
+
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", () => {
+    navigator.serviceWorker.register("sw.js")
+      .then(() => console.log("Service Worker зареєстрований"))
+      .catch(err => console.log("SW помилка:", err));
+  });
+}
