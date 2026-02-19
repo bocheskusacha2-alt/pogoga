@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sinoptik — Погода в Україні</title>
+<link rel="stylesheet" href="style/style.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Rubik:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/weather-icons/2.0.10/css/weather-icons.min.css">
+
+</head>
+<body>
+
+<header>
+  <div class="header-top">
+    <a href="#" class="logo">
+      <i class="wi wi-day-sunny logo-icon"></i>
+      <span>sinoptik</span>
+    </a>
+    <div class="search-wrap">
+      <input type="text" id="cityInput" placeholder="Введіть місто..." autocomplete="off">
+      <button onclick="handleSearch()">🔍</button>
+	  
+	  <div id="suggestions" class="suggestions-box"></div>
+    </div>
+    <div class="lang-switch" id="langSwitch">
+      <button class="active" data-lang="uk">УКР</button>
+      <button data-lang="ru">РУС</button>
+      <button data-lang="en">ENG</button>
+    </div>
+  </div>
+  <div class="header-city">
+    <a href="#">Головна</a>
+    <span id="breadcrumb-city">Київ</span>
+  </div>
+</header>
+
+<main>
+  <div class="city-title">Погода у <span id="cityName">Києві</span></div>
+
+  <!-- Day Cards -->
+  <div class="days-scroll">
+    <div class="days-row" id="daysRow"></div>
+  </div>
+
+  <!-- Central Block -->
+  <div class="central-block">
+    <div class="current-weather">
+      <div>
+        <div class="big-icon" id="mainIcon"><i class="wi wi-cloudy"></i></div>
+        <div class="big-temp"><span id="mainTemp">+14</span><span class="deg">°C</span></div>
+        <div class="current-info">
+          <div class="feels">Відчувається як <span id="feelsLike">+11</span>°C</div>
+          <div id="mainDesc">Хмарно</div>
+          <div id="mainDate">Вівторок, 19 лютого</div>
+        </div>
+      </div>
+    </div>
+    <div class="weather-desc">
+      <h3>☁️ Прогноз погоди</h3>
+      <p id="descText">У Києві хмарна погода триматиметься до самого вечора. Протягом дня очікується значна хмарність без опадів. Вітер північно-західний, помірний. Температура повітря протягом дня від +11°C до +14°C. Вночі похолодання до +6°C. Видимість добра.</p>
+    </div>
+    <div class="weather-params">
+      <div class="param-item">
+        <i class="wi wi-barometer"></i>
+        <div class="param-label">Тиск</div>
+        <div class="param-val"><span id="p-pressure">756</span><span class="param-unit">мм рт.ст.</span></div>
+      </div>
+      <div class="param-item">
+        <i class="wi wi-humidity"></i>
+        <div class="param-label">Вологість</div>
+        <div class="param-val"><span id="p-humidity">72</span><span class="param-unit">%</span></div>
+      </div>
+      <div class="param-item">
+        <i class="wi wi-strong-wind"></i>
+        <div class="param-label">Вітер</div>
+        <div class="param-val"><span id="p-wind">5</span><span class="param-unit">м/с</span></div>
+      </div>
+      <div class="param-item">
+        <i class="wi wi-umbrella"></i>
+        <div class="param-label">Опади</div>
+        <div class="param-val"><span id="p-precip">0.2</span><span class="param-unit">мм</span></div>
+      </div>
+      <div class="param-item">
+        <i class="wi wi-sunrise"></i>
+        <div class="param-label">Схід</div>
+        <div class="param-val"><span id="p-sunrise">07:21</span></div>
+      </div>
+      <div class="param-item">
+        <i class="wi wi-sunset"></i>
+        <div class="param-label">Захід</div>
+        <div class="param-val"><span id="p-sunset">17:48</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Hourly Table -->
+  <div class="section-title">Погодинний прогноз</div>
+  <div class="table-wrap">
+    <table class="hourly-table">
+      <thead>
+        <tr>
+          <th>Час</th>
+          <th>Явище</th>
+          <th>Темп. °C</th>
+          <th>Відчув. °C</th>
+          <th>Тиск, мм</th>
+          <th>Вологість, %</th>
+          <th>Вітер, м/с</th>
+          <th>Напрямок</th>
+        </tr>
+      </thead>
+      <tbody id="hourlyBody"></tbody>
+    </table>
+  </div>
+</main>
+
+<footer>
+  © 2024 <span>Sinoptik</span> — Погода в Україні та світі. Демо-версія.
+</footer>
+
+<script src="js/script.js"></script>
+</body>
+</html>
